@@ -1,0 +1,49 @@
+{
+  "name": "BioDockify MD Universal Project",
+  "version": "1.0.0",
+  "description": "Molecular dynamics simulation project structure",
+  "required_directories": [
+    ".",
+    "segment_000",
+    "analysis"
+  ],
+  "required_files": [
+    "topol.top",
+    "index.ndx"
+  ],
+  "optional_files": [
+    "mdp_parameters",
+    "initial_structure.gro",
+    "simulation_metadata.json"
+  ],
+  "output_patterns": {
+    "trajectory": "*.xtc",
+    "structure": "*_final.gro",
+    "energy": "*.edr",
+    "checkpoint": "*.cpt",
+    "log": "*.log"
+  },
+  "segment_pattern": "segment_{id:03d}",
+  "analysis_tools": [
+    "rmsd",
+    "rmsf",
+    "gyrate",
+    "hbond",
+    "rama",
+    "energy"
+  ],
+  "metadata": {
+    "simulation": {
+      "total_ns": 100,
+      "segment_ns": 10,
+      "temperature": 300,
+      "pressure": 1.0,
+      "engine": "GROMACS"
+    },
+    "system": {
+      "solvate": "spc216",
+      "ions": "NaCl",
+      "concentration": "0.15"
+    }
+  }
+}

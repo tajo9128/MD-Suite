@@ -1,0 +1,31 @@
+# BioDockify MD Universal - Global Configuration
+# Multi-GPU Molecular Dynamics Simulation Framework
+
+# Simulation Settings
+checkpoint_interval_minutes: 15
+default_segment_ns: 10
+total_simulation_ns: 100
+
+# Analysis Settings
+analysis_dpi: 300
+
+# Safety Limits
+temperature_limit_celsius: 85
+min_disk_space_gb: 5
+
+# Notification Settings
+enable_telegram: false
+telegram_bot_token: ""
+telegram_chat_id: ""
+
+# WSL Settings
+wsl_distro: "Ubuntu"
+gromacs_version: "2024.2"
+
+# Publication Settings
+auto_package: true
+include_analysis: true
+
+# Resume Settings
+auto_resume: true
+max_resume_attempts: 3
