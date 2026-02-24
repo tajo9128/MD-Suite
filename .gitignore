@@ -13,6 +13,7 @@ build/
 
 # Logs
 *.log
+biodockify_md.log
 
 # IDE
 .idea/
@@ -24,9 +25,31 @@ build/
 .DS_Store
 Thumbs.db
 
-# BioDockify specific
+# BioDockify specific - simulation outputs
 *.cpt
 *.xtc
 *.trr
 *.gro
 *.edr
+*.tpr
+*.pdb
+*.top
+
+# Project directories
+projects/
+*/segment_*/
+analysis/
+
+# Package outputs
+*_Publication/
+*_Publication.zip
+
+# Test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
