@@ -53,3 +53,7 @@ htmlcov/
 *.tmp
 *.bak
 *.orig
+
+# Windows specific (but keep start.bat)
+*.exe
+*.dll
