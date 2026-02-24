@@ -1,285 +1,345 @@
 # BioDockify MD Universal
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/tajo9128/MD-lite)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10+-orange)](https://www.python.org/)
-[![GROMACS](https://img.shields.io/badge/GROMACS-2024+-cyan)](https://www.gromacs.org/)
+**Autonomous Multi-GPU Molecular Dynamics Platform**
 
-**Multi-GPU Molecular Dynamics Simulation Framework with Autonomous AI Supervision**
+BioDockify MD Universal is a desktop molecular dynamics platform built on
+GROMACS with an intelligent supervisory system called **Nanobot Brain**.
 
----
-
-## Overview
-
-BioDockify MD Universal is a professional molecular dynamics (MD) simulation platform built on top of GROMACS. It provides an intelligent orchestration layer for running MD simulations with universal GPU support, autonomous monitoring, and publication-ready output generation.
-
-This software does not replace GROMACS but enhances it with AI-powered automation, making it ideal for PG students and researchers who need a streamlined workflow.
+It enables PG and PhD students to run fully automated, resume-safe molecular dynamics simulations with publication-ready output.
 
 ---
 
-## Features
+# What This Software Does
 
-### Universal GPU Support
-- **NVIDIA** (CUDA backend)
-- **AMD** (SYCL backend)
-- **Intel** (SYCL backend)
-- **CPU** fallback
+BioDockify MD Universal allows you to:
 
-### Autonomous Nanobot Brain
-- Continuous simulation monitoring
-- Real-time state synchronization
-- Checkpoint integrity verification
-- Hardware protection (temperature/disk guards)
-- Intelligent error detection
+- Add protein and ligand files
+- Select total simulation time (10-200+ ns)
+- Run automated MD workflow
+- Resume after shutdown
+- Monitor progress live
+- Receive notifications
+- Generate analysis plots automatically
+- Download a publication-ready package
 
-### Advanced Workflow
-- Segmented execution with resume capability
-- Dynamic simulation time control
-- Shutdown-resistant execution
-- Auto-resume across reboots
-
-### Analysis & Publication
-- Automated RMSD, RMSF, Gyration, Energy, SASA analysis
-- Trajectory merging and finalization
-- Publication-ready package generation
-- Reproducibility documentation
-
-### Communication
-- Telegram notifications
-- WhatsApp notifications
-- Discord webhooks
-- Email alerts
+No manual GROMACS commands required.
 
 ---
 
-## Architecture
+# System Requirements
 
-```
-Windows Native UI / CLI
-        |
-        v
-BioDockify AI Brain (Nanobot)
-   - Perception Layer (log, GPU, disk monitoring)
-   - Reasoning Layer (error detection, progress analysis)
-   - Action Layer (simulation control, finalization)
-   - Communication Layer (Telegram, Discord, Email)
-        |
-        v
-Workflow Engine
-   - Protein Preparation → Topology → Solvation
-   - Minimization → Equilibration → Production
-        |
-        v
-Adaptive GROMACS Backend
-   - gmx_cuda (NVIDIA)
-   - gmx_sycl (AMD/Intel)
-   - gmx_cpu (fallback)
-        |
-        v
-Segment + Resume Engine
-        |
-        v
-Publication Engine
-   - Analysis → Trajectory Merge → Package
+## Minimum System Requirements
+
+- Windows 10 / 11 (64-bit)
+- 16 GB RAM (minimum recommended)
+- 50 GB free disk space
+- WSL2 enabled
+- Python 3.10+
+
+## GPU Requirement
+
+BioDockify MD Universal supports:
+
+| GPU Type | Minimum Requirement        | Recommended        |
+| -------- | -------------------------- | ------------------ |
+| NVIDIA   | GTX 1650 (4 GB VRAM)       | RTX 3060 or higher |
+| AMD      | RX 5600 XT (6 GB VRAM)     | RX 6600 or higher  |
+| Intel    | Intel Arc A380 (6 GB VRAM) | Arc A750 or higher |
+| No GPU   | CPU fallback (very slow)   | Not recommended    |
+
+### Important Notes
+
+- Minimum **4 GB VRAM** required for small systems (~50k atoms).
+- For protein-ligand systems >100k atoms - **6-8 GB VRAM recommended**.
+- If no GPU is detected, simulation runs on CPU (slow but functional).
+- Laptop GPUs may throttle under heavy load.
+
+---
+
+# One-Time Setup
+
+## Step 1 - Install Python
+
+Download and install Python 3.10+:
+
+https://www.python.org/downloads/
+
+During installation:
+- Check "Add Python to PATH"
+
+## Step 2 - Install WSL2
+
+Open PowerShell as Administrator:
+
+```powershell
+wsl --install
 ```
 
----
+Restart your PC if required.
 
-## Installation
+Install Ubuntu from Microsoft Store if prompted.
 
-### Prerequisites
+## Step 3 - Install GROMACS Inside WSL
 
-1. **Windows 10/11** with WSL2 enabled
-2. **GROMACS 2024+** installed in WSL2
-3. **Python 3.10+**
-4. **NVIDIA CUDA Toolkit** (for NVIDIA GPUs) or **ROCm** (for AMD GPUs)
-
-### Setup
+Open Ubuntu terminal:
 
 ```bash
-# Clone repository
-git clone https://github.com/tajo9128/MD-lite.git
-cd MD-lite
+sudo apt update
+sudo apt install gromacs
+```
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Verify installation:
 
-# Install dependencies
+```bash
+gmx --version
+```
+
+If version displays - success.
+
+## Step 4 - Install Python Dependencies
+
+Inside project folder:
+
+```bash
 pip install -r requirements.txt
 ```
 
-### GROMACS Setup
+---
 
-Ensure GROMACS is installed in WSL2:
+# How to Launch BioDockify
 
-```bash
-# In WSL2
-wsl
-sudo apt-get update
-sudo apt-get install gromacs
+1. Extract the downloaded ZIP file.
+2. Open the extracted folder.
+3. Double-click:
+
 ```
+start.bat
+```
+
+The BioDockify MD window will open.
 
 ---
 
-## Quick Start
+# How to Create a Simulation
 
-### Command Line Interface
+1. Click **Add Protein (.pdb)**
+2. Click **Add Ligand (.mol2 / .sdf)**
+3. Select output folder
+4. Choose simulation time:
+   - 10 ns (Testing run)
+   - 50 ns (Moderate study)
+   - 100 ns (Publication standard)
+   - Custom value
+5. Click **Run Full Workflow**
 
-```bash
-# Detect GPU
-python main.py --detect-gpu
+Nanobot will now:
 
-# Create new project
-python main.py --create-project my_simulation
-
-# Run simulation
-python main.py --project ./my_simulation --run
-
-# Launch autonomous AI mode
-python main.py --project ./my_simulation --ai
-
-# Launch GUI
-python main.py --ui
-```
-
-### Autonomous Mode
-
-```bash
-# Start with Nanobot AI supervision
-python main.py --project ./my_sim --ai --ai-model ollama/llama2
-```
-
-Nanobot will:
-- Continuously monitor simulation progress
-- Detect and report errors automatically
-- Protect against hardware issues
-- Send notifications via Telegram/Discord
-- Resume automatically after interruptions
+- Prepare the system
+- Run minimization
+- Run equilibration
+- Run segmented production MD
+- Monitor continuously
 
 ---
 
-## Configuration
+# Simulation Time Selection
 
-Edit `config.yaml`:
+You can select total simulation length.
 
-```yaml
-checkpoint_interval_minutes: 15
-default_segment_ns: 10
-analysis_dpi: 300
-temperature_limit_celsius: 85
-min_disk_space_gb: 5
-enable_telegram: false
-```
+Example:
 
----
+- 10 ns - Testing run
+- 50 ns - Moderate study
+- 100 ns - Publication standard
+- 200+ ns - Advanced research
 
-## Project Structure
+Simulation is segmented internally (default 10 ns per segment) to ensure:
 
-```
-biodockify_md_universal/
-├── main.py                  # CLI entry point
-├── config.yaml             # Configuration
-├── requirements.txt         # Dependencies
-│
-├── core/                   # Core system
-│   ├── gpu_detector.py     # GPU detection
-│   ├── backend_selector.py # Backend selection
-│   ├── segment_manager.py  # Segmented execution
-│   ├── resume_manager.py  # Resume logic
-│   └── ...
-│
-├── biodockify_ai/          # AI Brain
-│   ├── brain.py           # Main brain
-│   ├── nanobot/           # Autonomous supervisor
-│   │   ├── event_loop.py
-│   │   ├── sync_engine.py
-│   │   ├── integrity_checker.py
-│   │   ├── perception/
-│   │   ├── reasoning/
-│   │   ├── actions/
-│   │   └── communication/
-│   └── ...
-│
-├── workflow/              # MD pipeline
-├── analysis/             # Analysis tools
-├── publication/          # Output packaging
-└── backends/             # GROMACS backends
-```
+- Resume safety
+- Minimal data loss
+- Stable long-term execution
 
 ---
 
-## Usage Examples
+# Resume After Shutdown
 
-### Running a Production MD
+If your PC shuts down:
 
-```bash
-# Create project with protein
-python main.py --create-project lysozyme_sim
+- Do not worry.
+- Reopen BioDockify.
+- Simulation resumes automatically from last checkpoint.
 
-# Configure simulation time (100ns, 10ns segments)
-# Edit config.yaml or use GUI
-
-# Run with AI supervision
-python main.py --project ./lysozyme_sim --ai
-```
-
-### Monitoring Progress
-
-Nanobot continuously updates `status.json` which can be read by the UI:
-
-```json
-{
-  "simulation": {
-    "current_ns": 45.2,
-    "total_ns": 100.0,
-    "progress_percent": 45.2,
-    "segment": 4
-  },
-  "hardware": {
-    "gpu_available": true,
-    "gpu_temp_celsius": 72
-  }
-}
-```
+Maximum possible data loss: ~15 minutes.
 
 ---
 
-## Academic Use
+# Monitoring Dashboard
 
-If you use BioDockify MD Universal in your research, please cite:
+The Monitor tab displays:
 
-```bibtex
-@software{biodockify_md_universal,
-  title = {BioDockify MD Universal},
-  author = {Shaik, Tajuddin},
-  version = {1.0.0},
-  date = {2026-02-22},
-  url = {https://github.com/tajo9128/MD-lite}
-}
-```
+- Current simulation time (ns)
+- Segment number
+- GPU detected
+- Backend in use (CUDA / SYCL / CPU)
+- GPU temperature
+- Estimated completion time
+- Error alerts (if any)
 
 ---
 
-## License
+# Notifications (Optional)
+
+You can enable:
+
+- Telegram alerts
+- Email updates
+
+Notifications are sent when:
+
+- Simulation starts
+- 25%, 50%, 75% progress reached
+- Error detected
+- Final package ready
+
+---
+
+# Final Output (Publication Ready)
+
+After completion, BioDockify automatically generates:
+
+```
+Project_Publication/
+   final_trajectory.xtc
+   final_energy.edr
+   final_structure.gro
+   topology.top
+   mdp_parameters.txt
+   simulation_metadata.json
+   analysis/
+   publication_package.zip
+```
+
+Click:
+
+```
+Download Final Package
+```
+
+Files are ready for:
+
+- Journal submission
+- Thesis integration
+- Data repository upload
+
+---
+
+# Safety & Stability Features
+
+Nanobot Brain continuously:
+
+- Monitors simulation logs
+- Checks checkpoint integrity
+- Tracks GPU temperature
+- Detects stalled runs
+- Prevents corrupted merges
+- Protects against disk overflow
+
+---
+
+# Expected Performance (Approximate)
+
+| GPU      | Approx Speed |
+| -------- | ------------ |
+| GTX 1650 | 6-10 ns/day  |
+| RTX 3060 | 15-25 ns/day |
+| RTX 4090 | 30+ ns/day   |
+| CPU only | 1-2 ns/day   |
+
+Actual speed depends on:
+
+- System size
+- Force field
+- Solvent model
+- GPU clock stability
+
+---
+
+# Citation
+
+This platform is built on top of:
+
+**GROMACS** - https://www.gromacs.org/
+
+Please cite GROMACS appropriately in your publication.
+
+---
+
+# Recommended Academic Workflow
+
+1. Run 10 ns test simulation
+2. Check RMSD stability
+3. Increase to 50-100 ns
+4. Confirm convergence
+5. Download publication package
+6. Insert analysis figures into thesis
+
+---
+
+# About Nanobot Brain
+
+Nanobot is an autonomous supervision engine that:
+
+- Monitors simulation continuously
+- Synchronizes state data
+- Detects instability
+- Protects hardware
+- Automates final packaging
+- Sends notifications
+
+It acts as a scientific assistant during MD execution.
+
+---
+
+# Support
+
+If you face issues:
+
+1. Confirm WSL is running
+2. Confirm GROMACS installed inside Ubuntu
+3. Check GPU drivers updated
+4. Ensure sufficient disk space
+
+For advanced support, open an issue on GitHub.
+
+---
+
+# BioDockify Vision
+
+BioDockify MD Universal is not just a GROMACS interface.
+
+It is:
+
+> A resume-safe, GPU-adaptive, autonomous molecular dynamics research platform
+> Designed for PG & PhD researchers.
+
+---
+
+# Quick Commands
+
+| Command | Description |
+|---------|-------------|
+| `python main.py --detect-gpu` | Detect available GPU |
+| `python main.py --create-project name` | Create new project |
+| `python main.py --project ./name --run` | Run simulation |
+| `python main.py --project ./name --ai` | Run with AI |
+| `python main.py --ui` | Launch GUI |
+
+---
+
+# License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Note:** This software uses GROMACS which is released under the LGPL license. BioDockify MD Universal is an orchestration layer and does not modify GROMACS itself.
-
 ---
 
-## Acknowledgments
-
-- [GROMACS](https://www.gromacs.org/) - Molecular dynamics simulation engine
-- [HKUDS/nanobot](https://github.com/HKUDS/nanobot) - AI assistant framework (adapted for MD supervision)
-
----
-
-## Support
-
-For issues and feature requests, please open an issue on GitHub.
-
----
-
-*Built for researchers, by researchers.*
+*BioDockify MD Universal - Built for researchers, by researchers.*
