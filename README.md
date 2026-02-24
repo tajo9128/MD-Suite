@@ -495,7 +495,26 @@ Please cite GROMACS appropriately in your publication.
 
 # License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+---
+
+# Roadmap
+
+## v1.1.0 (Planned)
+- Docking integration (AutoDock Vina)
+- Enhanced ligand parameterization
+- Basic free energy calculations
+
+## v1.2.0 (Planned)
+- Cloud hybrid mode
+- Multi-GPU scaling support
+- Advanced sampling methods
+
+## v2.0.0 (Vision)
+- AI-driven parameter optimization
+- Automated research reporting
+- Integration with BioDockify ecosystem
 
 ---
 
