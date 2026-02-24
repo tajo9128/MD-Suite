@@ -1,4 +1,4 @@
-# BioDockify MD Universal
+# BioDockify MD Suite
 
 **Autonomous Multi-GPU Molecular Dynamics Platform**
 
