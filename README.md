@@ -2,8 +2,13 @@
 
 **Autonomous Multi-GPU Molecular Dynamics Platform**
 
-BioDockify MD Universal is a desktop molecular dynamics platform built on
-GROMACS with an intelligent supervisory system called **Nanobot Brain**.
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![GPU Support](https://img.shields.io/badge/GPU-NVIDIA%20%7C%20AMD%20%7C%20Intel-orange)
+![Platform](https://img.shields.io/badge/platform-Windows%20%2B%20WSL2-lightgrey)
+![Engine](https://img.shields.io/badge/Engine-GROMACS-red)
+
+BioDockify MD Universal is a desktop molecular dynamics platform built on GROMACS with an intelligent supervisory system called **Nanobot Brain**.
 
 It enables PG and PhD students to run fully automated, resume-safe molecular dynamics simulations with publication-ready output.
 
@@ -41,7 +46,7 @@ No manual GROMACS commands required.
 BioDockify MD Universal supports:
 
 | GPU Type | Minimum Requirement        | Recommended        |
-| -------- | -------------------------- | ------------------ |
+| -------- | ------------------------ | ----------------- |
 | NVIDIA   | GTX 1650 (4 GB VRAM)       | RTX 3060 or higher |
 | AMD      | RX 5600 XT (6 GB VRAM)     | RX 6600 or higher  |
 | Intel    | Intel Arc A380 (6 GB VRAM) | Arc A750 or higher |
@@ -53,6 +58,20 @@ BioDockify MD Universal supports:
 - For protein-ligand systems >100k atoms - **6-8 GB VRAM recommended**.
 - If no GPU is detected, simulation runs on CPU (slow but functional).
 - Laptop GPUs may throttle under heavy load.
+
+---
+
+# Features Summary
+
+- Universal GPU detection (CUDA / SYCL / CPU fallback)
+- Segmented & resume-safe MD execution
+- Autonomous Nanobot monitoring system
+- Live progress tracking
+- Overheat & disk protection
+- Automatic RMSD / RMSF / Energy analysis
+- Publication-ready packaging
+- Telegram & Email alerts
+- Dynamic simulation time selection
 
 ---
 
@@ -264,24 +283,165 @@ Actual speed depends on:
 
 ---
 
-# Citation
+# Troubleshooting Guide
 
-This platform is built on top of:
+## Issue: Application does not start
 
-**GROMACS** - https://www.gromacs.org/
+- Ensure Python 3.10+ is installed
+- Ensure `pip install -r requirements.txt` completed successfully
+- Try running manually: `python main.py`
 
-Please cite GROMACS appropriately in your publication.
+## Issue: WSL not found
+
+Run in PowerShell (Admin):
+
+```powershell
+wsl --install
+```
+
+Restart your PC.
+
+## Issue: GROMACS not detected
+
+Open Ubuntu (WSL) and test:
+
+```bash
+gmx --version
+```
+
+If not found:
+
+```bash
+sudo apt update
+sudo apt install gromacs
+```
+
+## Issue: GPU not detected
+
+### NVIDIA:
+
+```bash
+wsl nvidia-smi
+```
+
+### AMD:
+
+Ensure latest AMD drivers installed and WSL GPU support enabled.
+
+### Intel:
+
+Ensure latest Intel Arc drivers installed.
+
+## Issue: Simulation paused automatically
+
+Possible reasons:
+
+- GPU temperature > 85C
+- Disk space < 5 GB
+- Simulation stall detected
+- Checkpoint not updating
+
+Check Monitor tab for details.
+
+## Issue: Simulation very slow
+
+Possible causes:
+
+- CPU fallback mode
+- Thermal throttling
+- Large system size
+- Background heavy processes
+
+Check Monitor tab for backend in use.
+
+## Issue: Resume not working
+
+Ensure:
+
+- `status.json` exists in project folder
+- `md.cpt` checkpoint file exists
+- Do not manually delete segment folders
 
 ---
 
-# Recommended Academic Workflow
+# FAQ - For PG Students
 
-1. Run 10 ns test simulation
-2. Check RMSD stability
-3. Increase to 50-100 ns
-4. Confirm convergence
-5. Download publication package
-6. Insert analysis figures into thesis
+## Q1: How long should my MD simulation be?
+
+- 10 ns - Testing
+- 50 ns - Preliminary results
+- 100 ns - Publication standard
+- 200+ ns - Advanced studies
+
+## Q2: Can I shut down my PC during simulation?
+
+Yes.
+
+BioDockify automatically resumes from last checkpoint when reopened.
+
+Maximum data loss: ~15 minutes.
+
+## Q3: What happens if my GPU overheats?
+
+Nanobot pauses simulation automatically and resumes when safe.
+
+## Q4: Do I need to know GROMACS commands?
+
+No.
+
+BioDockify automates the entire workflow.
+
+## Q5: Can I change simulation time after starting?
+
+Yes - you can extend total simulation time.
+You cannot reduce below completed progress.
+
+## Q6: Where are my final files stored?
+
+Inside:
+
+```
+Project_Name_Publication/
+```
+
+You can click:
+
+```
+Download Final Package
+```
+
+## Q7: What files should I include in my thesis?
+
+From publication folder:
+
+- final_trajectory.xtc
+- final_structure.gro
+- RMSD plot
+- RMSF plot
+- Energy plot
+- simulation_metadata.json
+
+## Q8: Can this replace commercial MD software?
+
+BioDockify is built on GROMACS which is widely used in academia and industry.
+
+It provides automation and monitoring on top of it.
+
+## Q9: What if I have no GPU?
+
+Simulation will run on CPU, but very slowly.
+GPU is strongly recommended.
+
+## Q10: How accurate are the results?
+
+Accuracy depends on:
+
+- Force field selection
+- System preparation
+- Simulation time
+- Convergence
+
+BioDockify ensures technical stability, but scientific validation remains your responsibility.
 
 ---
 
@@ -300,27 +460,24 @@ It acts as a scientific assistant during MD execution.
 
 ---
 
-# Support
+# Citation
 
-If you face issues:
+This platform is built on top of:
 
-1. Confirm WSL is running
-2. Confirm GROMACS installed inside Ubuntu
-3. Check GPU drivers updated
-4. Ensure sufficient disk space
+**GROMACS** - https://www.gromacs.org/
 
-For advanced support, open an issue on GitHub.
+Please cite GROMACS appropriately in your publication.
 
 ---
 
-# BioDockify Vision
+# Recommended Academic Workflow
 
-BioDockify MD Universal is not just a GROMACS interface.
-
-It is:
-
-> A resume-safe, GPU-adaptive, autonomous molecular dynamics research platform
-> Designed for PG & PhD researchers.
+1. Run 10 ns test simulation
+2. Check RMSD stability
+3. Increase to 50-100 ns
+4. Confirm convergence
+5. Download publication package
+6. Insert analysis figures into thesis
 
 ---
 
