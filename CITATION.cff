@@ -14,7 +14,7 @@ keywords:
   - computational biology
   - nvidia
   - amd
-license: MIT
+license: Apache-2.0
 version: 1.0.0
 date-released: 2026-02-22
 url: https://github.com/tajo9128/MD-lite
