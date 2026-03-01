@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test imports
+      run: |
+        python -c "from main import main; print('main OK')"
+        python -c "from core.gpu_detector import detect_gpu; print('gpu_detector OK')"
+        python -c "from core.backend_selector import select_backend; print('backend_selector OK')"
+        python -c "from biodockify_ai import brain; print('biodockify_ai OK')"
+        python -c "from workflow import Production; print('workflow OK')"
+        python -c "from analysis import RMSDAnalyzer; print('analysis OK')"
+        python -c "from publication import PackageCreator; print('publication OK')"
+    
+    - name: Test CLI
+      run: |
+        python main.py --version
+        python main.py --help
+
+  lint:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Check syntax
+      run: |
+        python -m py_compile main.py
+        python -m py_compile core/*.py
+        python -m py_compile biodockify_ai/brain.py

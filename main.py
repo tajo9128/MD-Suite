@@ -87,6 +87,20 @@ def parse_arguments():
         help='Display version information'
     )
     
+    parser.add_argument(
+        '--ai',
+        '--biobot',
+        action='store_true',
+        help='Launch BioDockify AI brain (autonomous mode)'
+    )
+    
+    parser.add_argument(
+        '--ai-model',
+        type=str,
+        default='ollama/llama2',
+        help='AI model to use (e.g., ollama/llama2, vllm/llama3)'
+    )
+    
     return parser.parse_args()
 
 
@@ -251,6 +265,55 @@ def launch_gui():
     launch_ui()
 
 
+def launch_biodockify_ai(project_path: str, config: dict, model: str):
+    """Launch BioDockify AI Brain for autonomous MD management"""
+    from biodockify_ai.brain import create_biobot
+    from core.shutdown_guard import register_shutdown_handler
+    
+    logger.info(f"Launching BioDockify AI with model: {model}")
+    
+    # Register shutdown handler
+    register_shutdown_handler()
+    
+    # Create AI brain
+    ai_config = {
+        **config,
+        "ai_model": model,
+        "check_interval_seconds": config.get("ai_check_interval", 30)
+    }
+    
+    biobot = create_biobot(project_path, ai_config)
+    
+    # Start AI brain
+    biobot.start()
+    
+    print(f"\n{'='*50}")
+    print("BioDockify AI - Autonomous MD Manager")
+    print(f"{'='*50}")
+    print(f"Project: {project_path}")
+    print(f"AI Model: {model}")
+    print(f"Monitoring: Enabled")
+    print(f"\nPress Ctrl+C to stop...")
+    print(f"{'='*50}\n")
+    
+    try:
+        import time
+        while True:
+            status = biobot.get_status()
+            print(f"\r[{datetime.now().strftime('%H:%M:%S')}] "
+                  f"Health: {status['system_health']['status']} | "
+                  f"CPU: {status['system_health']['cpu']:.1f}% | "
+                  f"Progress: {status['task']['progress']:.1f}%", end="")
+            time.sleep(10)
+    except KeyboardInterrupt:
+        print("\n\nStopping BioDockify AI...")
+        biobot.stop()
+        print("BioDockify AI stopped.")
+
+
+from datetime import datetime
+
+
 def main():
     """Main entry point"""
     args = parse_arguments()
@@ -276,7 +339,13 @@ def main():
         return 0
     
     # CLI mode
-    if args.ui:
+    if args.ai:
+        # Launch BioDockify AI
+        if not args.project:
+            print("Error: --ai requires --project PATH")
+            return 1
+        launch_biodockify_ai(args.project, config, args.ai_model)
+    elif args.ui:
         # Launch GUI
         launch_gui()
     else:
@@ -299,11 +368,13 @@ def main():
             print("  --ui                 Launch GUI")
             print("  --project PATH --run Run simulation")
             print("  --project PATH --package Create publication package")
+            print("  --project PATH --ai  Launch BioDockify AI (autonomous)")
             print("\nExamples:")
             print("  python main.py --detect-gpu")
             print("  python main.py --create-project my_simulation")
             print("  python main.py --ui")
             print("  python main.py --project ./my_sim --run")
+            print("  python main.py --project ./my_sim --ai")
     
     return 0
 

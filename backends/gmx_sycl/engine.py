@@ -43,8 +43,8 @@ class GMXSYCLBackend:
     def build_mdrun_command(
         self,
         tpr_file: str,
-        output        resume: bool_prefix: str,
- = False,
+        output_prefix: str,
+        resume: bool = False,
         checkpoint_interval: int = 15
     ) -> str:
         """

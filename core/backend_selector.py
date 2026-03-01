@@ -458,13 +458,13 @@ def get_autotune_config(backend: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # Test backend selection
-    from .gpu_detector import detect_gpu
+    from core.gpu_detector import detect_gpu
     
     print("Testing Backend Selection...")
     gpu_info = detect_gpu()
     backend = select_backend(gpu_info)
     config = get_backend_config(backend)
     
-    print(f"GPU: {gpu_info['vendor']}")
+    print(f"GPU: {gpu_info.get('vendor', 'Unknown')}")
     print(f"Backend: {backend}")
     print(f"Config: {config}")

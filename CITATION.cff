@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: BioDockify MD Universal
+message: >-
+  If you use this software, please cite it as below.
+authors:
+  - family-names: Shaik
+    given-names: Tajuddin
+    affiliation: Department of Pharmacology
+    orcid: https://orcid.org/0000-0000-0000-0000
+keywords:
+  - molecular dynamics
+  - gromacs
+  - simulation
+  - computational biology
+  - nvidia
+  - amd
+license: Apache-2.0
+version: 1.0.0
+date-released: 2026-02-22
+url: https://github.com/tajo9128/MD-lite
+repository-code: https://github.com/tajo9128/MD-lite
+description: >-
+  Multi-GPU Molecular Dynamics Simulation Framework with
+  Autonomous AI Supervision. Built on top of GROMACS,
+  featuring adaptive backend selection, segmented execution,
+  and automated publication-ready output generation.
