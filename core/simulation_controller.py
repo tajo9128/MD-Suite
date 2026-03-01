@@ -8,7 +8,7 @@ import subprocess
 import logging
 import time
 import threading
-from typing import Optional, Dict, Callable
+from typing import Optional, Dict, Callable, Any
 from datetime import datetime
 from pathlib import Path
 
@@ -73,6 +73,19 @@ class SimulationController:
         """
         from .backend_selector import get_mdrun_command
         
+        # DIAGNOSTIC: Check WSL availability
+        import subprocess
+        try:
+            wsl_check = subprocess.run(
+                "wsl --status",
+                shell=True,
+                capture_output=True,
+                timeout=10
+            )
+            logger.info(f"WSL status check: returncode={wsl_check.returncode}")
+        except Exception as e:
+            logger.warning(f"WSL may not be available: {e}")
+        
         self.current_segment_id = segment_id
         
         # Build the mdrun command
@@ -85,8 +98,14 @@ class SimulationController:
         )
         
         if resume and checkpoint_file:
-            # Add checkpoint file to command
-            cmd += f" {checkpoint_file}"
+            # Add checkpoint file to command - properly quoted to handle spaces
+            # DIAGNOSTIC: Log checkpoint path for debugging
+            logger.info(f"Resume checkpoint file: {checkpoint_file}")
+            if ' ' in checkpoint_file:
+                logger.warning(f"Checkpoint path contains spaces - will use quoted form")
+                cmd += f' "{checkpoint_file}"'
+            else:
+                cmd += f" {checkpoint_file}"
             
         logger.info(f"Starting simulation: {cmd}")
         
@@ -166,25 +185,141 @@ class SimulationController:
             time.sleep(10)  # Check every 10 seconds
             
     def _parse_progress(self, log_file: str) -> Optional[Dict]:
-        """Parse progress information from log file"""
+        """Parse progress information from log file with enhanced accuracy"""
         try:
-            with open(log_file, 'r') as f:
-                lines = f.readlines()
+            if not os.path.exists(log_file):
+                return None
                 
-            # Look for performance/progress lines
-            for line in lines[-20:]:  # Last 20 lines
-                if "Performance:" in line:
-                    # Try to extract timing info
-                    return {
-                        "log_file": log_file,
-                        "status": "running"
-                    }
+            with open(log_file, 'r') as f:
+                content = f.read()
+                lines = content.split('\n')
+            
+            result = {
+                "log_file": log_file,
+                "status": "unknown",
+                "progress_percent": 0.0,
+                "current_step": 0,
+                "total_steps": 0,
+                "current_time_ps": 0.0,
+                "target_time_ps": 0.0,
+                "ns_per_day": None,
+                "eta_hours": None,
+                "temperature": None,
+                "pressure": None,
+                "density": None,
+                "energies": {},
+                "warnings": [],
+                "errors": []
+            }
+            
+            # Look for progress information in last 100 lines
+            recent_lines = lines[-100:] if len(lines) > 100 else lines
+            
+            for line in recent_lines:
+                # Parse step and time
+                if "Step" in line and "Time" in line:
+                    result["status"] = "running"
                     
-                if "Step           Time" in line:
-                    return {
-                        "log_file": log_file,
-                        "status": "running"
-                    }
+                # Parse actual step data
+                if line.strip() and line[0].isdigit():
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        try:
+                            result["current_step"] = int(parts[0])
+                            result["current_time_ps"] = float(parts[1])
+                        except (ValueError, IndexError):
+                            pass
+                            
+                # Parse performance metrics (ns/day)
+                if "ns/day" in line.lower() or "ns/day" in line:
+                    try:
+                        # Extract ns/day value
+                        for part in line.split():
+                            if "ns/day" in part.lower():
+                                idx = line.split().index(part)
+                                if idx > 0:
+                                    ns_val = line.split()[idx - 1]
+                                    result["ns_per_day"] = float(ns_val)
+                                    break
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse temperature
+                if "Temperature" in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            temp = parts[1].split()[0]
+                            result["temperature"] = float(temp)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse pressure
+                if "Pressure" in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            press = parts[1].split()[0]
+                            result["pressure"] = float(press)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse density
+                if "Density" in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            dens = parts[1].split()[0]
+                            result["density"] = float(dens)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse potential energy
+                if "Potential" in line and "Kinetic" not in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            e_val = parts[1].split()[0]
+                            result["energies"]["potential"] = float(e_val)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse kinetic energy
+                if "Kinetic En." in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            e_val = parts[1].split()[0]
+                            result["energies"]["kinetic"] = float(e_val)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Parse total energy
+                if "Total Energy" in line or "Etot" in line:
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 1:
+                            e_val = parts[1].split()[0]
+                            result["energies"]["total"] = float(e_val)
+                    except (ValueError, IndexError):
+                        pass
+                
+                # Check for warnings
+                if "WARNING" in line.upper():
+                    result["warnings"].append(line.strip())
+                
+                # Check for errors
+                if "ERROR" in line.upper() or "FAILED" in line.upper():
+                    result["errors"].append(line.strip())
+                    result["status"] = "error"
+            
+            # Try to get total steps from MDP content if available
+            # This is a simplification - in practice you'd parse from .mdp or .tpr
+            if result["current_time_ps"] > 0:
+                # Estimate progress if we have target info
+                result["status"] = "running"
+            
+            return result
                     
         except Exception as e:
             logger.debug(f"Failed to parse log: {e}")
@@ -256,9 +391,77 @@ class SimulationController:
             
     def get_estimated_time_remaining(self) -> Optional[float]:
         """Estimate remaining simulation time based on log file"""
-        # This would require parsing GROMACS log for detailed timing
-        # Simplified implementation
-        return None
+        if not self.process or not self.current_segment_id:
+            return None
+            
+        try:
+            # Try to find the log file from output prefix
+            # This is a placeholder - actual implementation would need
+            # the output prefix passed in
+            return None
+        except Exception as e:
+            logger.debug(f"Error estimating time: {e}")
+            return None
+    
+    def get_progress_details(self, output_prefix: str = None) -> Dict[str, Any]:
+        """
+        Get detailed progress information for a simulation.
+        
+        Args:
+            output_prefix: Output file prefix (optional)
+            
+        Returns:
+            Dictionary with detailed progress info
+        """
+        if not output_prefix:
+            output_prefix = f"{self.project_path}/md"
+            
+        log_file = f"{output_prefix}.log"
+        
+        progress = {
+            "is_running": self.is_running,
+            "segment_id": self.current_segment_id,
+            "backend": self.backend,
+            "progress": 0.0,
+            "current_step": 0,
+            "target_steps": 0,
+            "current_time_ps": 0.0,
+            "target_time_ps": 0.0,
+            "progress_ns": 0.0,
+            "target_ns": 0.0,
+            "ns_per_day": None,
+            "eta_hours": None,
+            "temperature": None,
+            "pressure": None,
+            "density": None,
+            "energies": {},
+            "warnings": [],
+            "errors": [],
+            "status": "unknown"
+        }
+        
+        if self.is_running:
+            progress["status"] = "running"
+            log_progress = self._parse_progress(log_file)
+            if log_progress:
+                progress.update(log_progress)
+                
+                # Calculate progress percentage
+                if progress.get("current_time_ps", 0) > 0 and progress.get("target_time_ps", 0) > 0:
+                    progress["progress_percent"] = min(
+                        100.0,
+                        (progress["current_time_ps"] / progress["target_time_ps"]) * 100
+                    )
+                
+                # Calculate ETA if we have ns/day
+                if progress.get("ns_per_day"):
+                    remaining_ns = progress.get("target_ns", 0) - progress.get("progress_ns", 0)
+                    if remaining_ns > 0:
+                        progress["eta_hours"] = remaining_ns / progress["ns_per_day"] * 24
+        else:
+            progress["status"] = "stopped"
+        
+        return progress
         
     def validate_input_files(self, tpr_file: str) -> tuple[bool, list]:
         """
@@ -300,9 +503,15 @@ class SimulationController:
         Returns:
             Path to generated TPR file, or None on failure
         """
+        from .backend_selector import get_gmx_command_prefix
+        
         tpr_file = f"{output_prefix}.tpr"
         
-        cmd = f"wsl gmx grompp -f {mdp_file} -c {structure_file} -o {tpr_file} -p topol.top"
+        # Use appropriate GROMACS command prefix based on WSL availability
+        gmx_prefix = get_gmx_command_prefix()
+        cmd = f"{gmx_prefix} grompp -f {mdp_file} -c {structure_file} -o {tpr_file} -p topol.top"
+        
+        logger.info(f"Running grompp: {cmd}")
         
         try:
             result = subprocess.run(
